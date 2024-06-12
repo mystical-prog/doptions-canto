@@ -6,11 +6,13 @@ node_modules/
 
 # Ignores development broadcast logs
 !/broadcast
-/broadcast/*/31337/
+/broadcast/**/7701/
 /broadcast/**/dry-run/
+/script/price_update.txt
 
 # Docs
 docs/
 
 # Dotenv file
 .env
+args.txt

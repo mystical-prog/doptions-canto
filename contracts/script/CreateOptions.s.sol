@@ -7,7 +7,6 @@ import "../src/primary/Factory.sol";
 import "../src/primary/Call.sol";
 import "../src/primary/Put.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "./TestTokens.s.sol";
 
 contract CreateOption is Script {
 
@@ -37,11 +36,11 @@ contract CreateOption is Script {
 contract InitOption is Script {
 
     PutOption putOption;
-    Token aUSDT;
+    ERC20 aUSDT;
 
     function setUp() public {
         putOption = PutOption(0x2DE7f048E4D99784983CfE24193B6e8818F91503);
-        aUSDT = Token(0xB1b104D79dE24513338bdB6CB9Df468110010E5F);
+        aUSDT = ERC20(0xB1b104D79dE24513338bdB6CB9Df468110010E5F);
     }
 
     function run() public {

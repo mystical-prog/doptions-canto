@@ -5,19 +5,24 @@ import "forge-std/Script.sol";
 import {IPyth} from "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
 
 contract UpdatePrice is Script {
-    function setUp() public {}
+
+    IPyth pyth;
+    uint fee;
+    bytes[] priceUpdateArray;
+
+    function setUp() public {
+        pyth = IPyth(vm.envAddress("PYTH_ADDRESS"));
+        priceUpdateArray = new bytes[](1);
+        priceUpdateArray[0] = vm.envBytes("PRICE_UPDATE");
+        fee = pyth.getUpdateFee(priceUpdateArray);
+    }
 
     function run() external {
-        uint256 privateKey = vm.envUint("DEV_PRIVATE_KEY");
+        uint privateKey = vm.envUint("DEV_PRIVATE_KEY");
         vm.startBroadcast(privateKey);
 
-        IPyth pyth = IPyth(vm.envAddress("PYTH_ADDRESS"));
-        bytes[] memory priceUpdateArray = new bytes[](1);
-        priceUpdateArray[0] = vm.envBytes("PRICE_UPDATE");
-
-        uint fee = pyth.getUpdateFee(priceUpdateArray);
         pyth.updatePriceFeeds{value: fee}(priceUpdateArray);
-
+        
         vm.stopBroadcast();
     }
 }

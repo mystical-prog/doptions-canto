@@ -10,24 +10,23 @@ import "../src/primary/AggregatorV3Interface.sol";
 
 contract PutOptionTest is Test {
     OptionsFactory public factory;
-    address daiToken = 0xDc61d022126ccB074cE31f4cF66E847d0086a58E; // 18 decimals random token
-    address solToken = 0x13F793FAadA9b42BeFEF18048658813CF6FE790F; // 18 decimals random token
-    address priceOracle = 0xF8e2648F3F157D972198479D5C7f0D721657Af67; // 8 decimals
+    address noteToken = 0x03F734Bd9847575fDbE9bEaDDf9C166F880B5E5f; // 18 decimals
+    address ethToken = 0xCa03230E7FB13456326a234443aAd111AC96410A; // 18 decimals
+    address priceOracle = 0xc302BD52985e75C1f563a47f2b5dfC4e2b5C6C7E; // 8 decimals
     PutOption putOption;
 
     address creator = makeAddr("creator");
     address buyer = makeAddr("buyer");
 
     function setUp() public {
-        factory = new OptionsFactory(daiToken);
-        factory.setPriceOracle(solToken, priceOracle);
-        uint256 premium = 100e18;
-        uint256 strikePrice = 185e8;
-        uint256 quantity = 1e18;
+        factory = OptionsFactory(0xA5192B03B520aF7214930936C958CF812e361CD3);
+        uint256 premium = 10e18;
+        uint256 strikePrice = 3800e8;
+        uint256 quantity = 1e16;
         uint256 expiration = block.timestamp + 1 weeks;
 
         vm.prank(creator);
-        factory.createPutOption(solToken, premium, strikePrice, quantity, expiration);
+        factory.createPutOption(ethToken, premium, strikePrice, quantity, expiration);
 
         address[] memory putOptions = factory.getPutOptions();
         putOption = PutOption(putOptions[0]);
@@ -35,95 +34,95 @@ contract PutOptionTest is Test {
 
     function testBuyAndExecute() public {
         assertEq(putOption.inited(), false);
-        assertEq(putOption.strikeValue(), 185e18);
+        assertEq(putOption.strikeValue(), 38e18);
 
-        ERC20 solERC20 = ERC20(solToken);
-        ERC20 daiERC20 = ERC20(daiToken);
+        ERC20 ethERC20 = ERC20(ethToken);
+        ERC20 noteERC20 = ERC20(noteToken);
 
-        deal(daiToken, creator, putOption.strikeValue());
+        deal(noteToken, creator, putOption.strikeValue());
 
         vm.startPrank(creator);
-        daiERC20.approve(address(putOption), putOption.strikeValue());
+        noteERC20.approve(address(putOption), putOption.strikeValue());
         putOption.init();
         vm.stopPrank();
 
         assertEq(putOption.inited(), true);
         assertEq(putOption.bought(), false);
 
-        deal(daiToken, buyer, 100e18);
-        deal(solToken, buyer, 1e18);
+        deal(noteToken, buyer, 10e18);
+        deal(ethToken, buyer, 1e16);
 
         vm.startPrank(buyer);
-        daiERC20.approve(address(putOption), 100e18);
+        noteERC20.approve(address(putOption), 10e18);
         putOption.buy();
 
-        assertEq(daiERC20.balanceOf(buyer), 0);
+        assertEq(noteERC20.balanceOf(buyer), 0);
         assertEq(putOption.bought(), true);
         assertEq(putOption.executed(), false);
         assertEq(putOption.buyer(), buyer);
 
-        solERC20.approve(address(putOption), putOption.strikeValue());
+        ethERC20.approve(address(putOption), putOption.strikeValue());
         putOption.execute();
         vm.stopPrank();
 
-        assertEq(solERC20.balanceOf(creator), putOption.quantity());
-        assertEq(daiERC20.balanceOf(buyer), putOption.strikeValue());
-        assertEq(daiERC20.balanceOf(creator), 100e18);
+        assertEq(ethERC20.balanceOf(creator), putOption.quantity());
+        assertEq(noteERC20.balanceOf(buyer), putOption.strikeValue());
+        assertEq(noteERC20.balanceOf(creator), 10e18);
         assertEq(putOption.executed(), true);
     }
 
     function testCancel() public {
         assertEq(putOption.inited(), false);
-        assertEq(putOption.strikeValue(), 185e18);
+        assertEq(putOption.strikeValue(), 38e18);
 
-        ERC20 daiERC20 = ERC20(daiToken);
+        ERC20 noteERC20 = ERC20(noteToken);
 
-        deal(daiToken, creator, putOption.strikeValue());
+        deal(noteToken, creator, putOption.strikeValue());
 
         vm.startPrank(creator);
-        daiERC20.approve(address(putOption), 185e18);
+        noteERC20.approve(address(putOption), putOption.strikeValue());
         putOption.init();
 
         assertEq(putOption.inited(), true);
         assertEq(putOption.executed(), false);
-        assertEq(daiERC20.balanceOf(address(putOption)), 185e18);
+        assertEq(noteERC20.balanceOf(address(putOption)), putOption.strikeValue());
 
         skip(5 days);
         putOption.cancel();
         vm.stopPrank();
 
         assertEq(putOption.executed(), true);
-        assertEq(daiERC20.balanceOf(address(putOption)), 0);
-        assertEq(daiERC20.balanceOf(creator), 185e18);
+        assertEq(noteERC20.balanceOf(address(putOption)), 0);
+        assertEq(noteERC20.balanceOf(creator), 38e18);
     }
 
     function testWithdraw() public {
         assertEq(putOption.inited(), false);
-        assertEq(putOption.strikeValue(), 185e18);
+        assertEq(putOption.strikeValue(), 38e18);
 
-        ERC20 solERC20 = ERC20(solToken);
-        ERC20 daiERC20 = ERC20(daiToken);
+        ERC20 ethERC20 = ERC20(ethToken);
+        ERC20 noteERC20 = ERC20(noteToken);
 
-        deal(daiToken, creator, putOption.strikeValue());
+        deal(noteToken, creator, putOption.strikeValue());
 
         vm.startPrank(creator);
-        daiERC20.approve(address(putOption), 185e18);
+        noteERC20.approve(address(putOption), putOption.strikeValue());
         putOption.init();
         vm.stopPrank();
 
         assertEq(putOption.inited(), true);
         assertEq(putOption.bought(), false);
-        assertEq(daiERC20.balanceOf(address(putOption)), 185e18);
+        assertEq(noteERC20.balanceOf(address(putOption)), putOption.strikeValue());
 
-        deal(daiToken, buyer, 100e18);
-        deal(solToken, buyer, 1e18);
+        deal(noteToken, buyer, 10e18);
+        deal(ethToken, buyer, 1e16);
 
         vm.startPrank(buyer);
-        daiERC20.approve(address(putOption), 100e18);
+        noteERC20.approve(address(putOption), 10e18);
         putOption.buy();
         vm.stopPrank();
 
-        assertEq(daiERC20.balanceOf(buyer), 0);
+        assertEq(noteERC20.balanceOf(buyer), 0);
         assertEq(putOption.bought(), true);
         assertEq(putOption.executed(), false);
         assertEq(putOption.buyer(), buyer);
@@ -133,60 +132,60 @@ contract PutOptionTest is Test {
         putOption.withdraw();
         vm.stopPrank();
 
-        assertEq(solERC20.balanceOf(buyer), 1e18);
-        assertEq(daiERC20.balanceOf(buyer), 0);
-        assertEq(daiERC20.balanceOf(creator), 285e18);
+        assertEq(ethERC20.balanceOf(buyer), 1e16);
+        assertEq(noteERC20.balanceOf(buyer), 0);
+        assertEq(noteERC20.balanceOf(creator), 48e18);
         assertEq(putOption.executed(), true);
     }
 
     function testExecuteFails() public {
-        uint256 _premium = 100e18;
-        uint256 _strikePrice = 180e8;
-        uint256 _quantity = 1e18;
+        uint256 _premium = 10e18;
+        uint256 _strikePrice = 3000e8;
+        uint256 _quantity = 1e16;
         uint256 _expiration = block.timestamp + 1 weeks;
 
         vm.prank(creator);
-        factory.createPutOption(solToken, _premium, _strikePrice, _quantity, _expiration);
+        factory.createPutOption(ethToken, _premium, _strikePrice, _quantity, _expiration);
 
         address[] memory _putOptions = factory.getPutOptions();
         PutOption putOption2 = PutOption(_putOptions[1]);
 
         assertEq(putOption2.inited(), false);
-        assertEq(putOption2.strikeValue(), 180e18);
+        assertEq(putOption2.strikeValue(), 30e18);
 
-        ERC20 solERC20 = ERC20(solToken);
-        ERC20 daiERC20 = ERC20(daiToken);
+        ERC20 ethERC20 = ERC20(ethToken);
+        ERC20 noteERC20 = ERC20(noteToken);
 
-        deal(daiToken, creator, putOption2.strikeValue());
+        deal(noteToken, creator, putOption2.strikeValue());
 
         vm.startPrank(creator);
-        daiERC20.approve(address(putOption2), putOption2.strikeValue());
+        noteERC20.approve(address(putOption2), putOption2.strikeValue());
         putOption2.init();
         vm.stopPrank();
 
-        assertEq(daiERC20.balanceOf(creator), 0);
+        assertEq(noteERC20.balanceOf(creator), 0);
         assertEq(putOption2.inited(), true);
         assertEq(putOption2.bought(), false);
 
-        deal(daiToken, buyer, 100e18);
-        deal(solToken, buyer, 1e18);
+        deal(noteToken, buyer, 10e18);
+        deal(ethToken, buyer, 1e16);
 
         vm.startPrank(buyer);
-        daiERC20.approve(address(putOption2), 100e18);
+        noteERC20.approve(address(putOption2), 10e18);
         putOption2.buy();
 
-        assertEq(daiERC20.balanceOf(buyer), 0);
+        assertEq(noteERC20.balanceOf(buyer), 0);
         assertEq(putOption2.bought(), true);
         assertEq(putOption2.executed(), false);
         assertEq(putOption2.buyer(), buyer);
 
-        solERC20.approve(address(putOption2), putOption2.strikeValue());
+        ethERC20.approve(address(putOption2), putOption2.strikeValue());
         vm.expectRevert();
         putOption2.execute();
         vm.stopPrank();
 
-        assertEq(solERC20.balanceOf(buyer), 1e18);
-        assertEq(daiERC20.balanceOf(creator), 100e18);
+        assertEq(ethERC20.balanceOf(buyer), 1e16);
+        assertEq(noteERC20.balanceOf(creator), 10e18);
         assertEq(putOption2.executed(), false);
     }
 }

@@ -100,7 +100,8 @@ contract CallOption {
     }
 
     function _checkPosition() internal view returns (bool) {
-        (, int256 price,,,) = priceOracle.latestRoundData();
+        (, int256 price,,uint256 updatedAt,) = priceOracle.latestRoundData();
+        require(updatedAt + 2 minutes > block.timestamp, "Price needs to be updated first");
         return uint256(price) >= strikePrice;
     }
 

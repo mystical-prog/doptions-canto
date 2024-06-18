@@ -24,9 +24,8 @@ const OptionForm: React.FC<Props> = ({ params }) => {
   const [loading, setLoading] = useState(false);
 
   const ticker : { [key : string] : string } = {
-    "bitcoin" : "BTC",
     "ethereum" : "ETH",
-    "link" : "LINK"
+    "wcanto" : "WCANTO"
   };
 
   useEffect(() => {

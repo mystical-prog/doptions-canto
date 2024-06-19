@@ -136,7 +136,7 @@ const OptionForm: React.FC<Props> = ({ params }) => {
               value={premium}
               onChange={(e) => setPremium(e.target.value)}
               className="mt-1 block w-full px-3 py-2 bg-[#1a1a1a] border border-gray-600 rounded-lg bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600 font-sans"
-              placeholder="Enter Premium (DAI)"
+              placeholder="Enter Premium (NOTE)"
             />
           </div>
           <div className="mb-4">

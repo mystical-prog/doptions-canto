@@ -4,6 +4,7 @@ import { useWeb3ModalProvider, useWeb3ModalAccount } from '@web3modal/ethers/rea
 import { getPositions, executeOption, withdrawOption, PositionData } from './interactions';
 import LoadingScreen from "@/components/LoadingScreen";
 import { BackgroundGradient } from '@/components/ui/background-gradient';
+import { updatePrices } from '@/web3/Prices';
 
 const PositionsPage = () => {
   const { address, chainId, isConnected } = useWeb3ModalAccount();
@@ -38,6 +39,7 @@ const PositionsPage = () => {
   
 
   const onExecuteClick = async (addr: string, call: boolean) => {
+    await updatePrices(walletProvider);
     await executeOption(walletProvider, chainId, addr, call);
     await fetchPositions();
   }

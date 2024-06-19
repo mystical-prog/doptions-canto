@@ -47,9 +47,9 @@ export default function Navbar({ className }: { className?: string }) {
         <MenuItem setActive={setActive} active={active} item="Positions"></MenuItem>
         </Link>
           <w3m-button />
-          <button onClick={onFaucet}>
+          {/* <button onClick={onFaucet}>
           <Button3 text={loading ? "Loading..." : "Token Faucet"} />
-          </button>
+          </button> */}
       </Menu>
     </nav>
   );
